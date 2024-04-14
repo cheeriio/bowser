@@ -12,6 +12,7 @@ add_executable(Bowser src/main.cpp
                       src/url.cpp
                       src/log.cpp
                       src/http_response.cpp
+                      src/http_request.cpp
                       src/html_parser.cpp)
 
 target_link_libraries(Bowser OpenSSL::SSL OpenSSL::Crypto)

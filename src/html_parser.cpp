@@ -2,6 +2,7 @@
 #include <log.hpp>
 
 #include <iostream>
+#include <regex>
 
 HtmlParser::HtmlParser(std::string code) : code_(code) {}
 
@@ -19,12 +20,22 @@ void HtmlParser::Show() {
   bool in_tag = false;
 
   for(int i = 0; i < body.size(); i++) {
-    if(body.at(i) == '<')
+    if(body.at(i) == '<') {
       in_tag = true;
-    else if(body.at(i) == '>')
+    } else if(body.at(i) == '>') {
       in_tag = false;
-    else if(!in_tag)
-      std::cout << body.at(i);
+    } else if(!in_tag) {
+      // Get position of next tag, replace all entities in text and show
+      size_t pos = body.find("<", i);
+      std::string shown = body.substr(i, pos - i);
+      int length = shown.size();
+
+      shown = std::regex_replace(shown, std::regex("&lt;"), "<");
+      shown = std::regex_replace(shown, std::regex("&gt;"), ">");
+
+      std::cout << shown;
+      i += length - 1;
+    }
   }
 }
 

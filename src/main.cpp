@@ -3,6 +3,7 @@
 
 #include <url.hpp>
 #include <connection.hpp>
+#include <http_request.hpp>
 #include <http_response.hpp>
 #include <html_parser.hpp>
 
@@ -26,16 +27,16 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  std::stringstream message_sstr;
-  message_sstr << "GET " << url.Path() << " HTTP/1.1\r\n"
-               << "Host: " << url.Host() << "\r\n"
-               << "Connection: close\r\n"
-               << "User-Agent: Chewbacca\r\n"
-               << "\r\n";
-  std::string message_str = message_sstr.str();
-  std::vector<uint8_t> message(message_str.begin(), message_str.end());
+  HttpRequest request(url);
+  request.Method("GET")
+         .Version("HTTP/1.1")
+         .AddHeader("Connection", "close")
+         .AddHeader("User-Agent", "Chewbacca");
 
+  std::string message_str = request.Str();
+  std::vector<uint8_t> message(message_str.begin(), message_str.end());
   connection.SendMessage(message);
+  
   std::vector<uint8_t> response = connection.ReceiveMessage();
   HttpResponse response_obj(response);
 
