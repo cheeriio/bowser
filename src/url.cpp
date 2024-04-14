@@ -3,6 +3,7 @@
 #include <const.hpp>
 
 #include <unordered_map>
+#include <algorithm>
 
 namespace {
   using WebProtocol = URL::WebProtocol;
@@ -27,16 +28,49 @@ URL::URL(std::string url) {
   }
   
   url = url.erase(0, pos + 3);
-  
+
+  pos = url.find(":");
+
+  if(pos != std::string::npos) {
+    port_set_ = true;
+    host_ = url.substr(0, pos);
+    url.erase(0, pos + 1);
+  } else {
+    pos = url.find("/");
+    if(pos == std::string::npos) {
+      host_ = url;
+      path_ = "/";
+      return;
+    } else {
+      host_ = url.substr(0, pos);
+      url.erase(0, pos);
+      path_ = url;
+      return;
+    }
+  }
+
   pos = url.find("/");
-  
+
+  std::string port;
+
   if(pos == std::string::npos) {
-    host_ = url;
+    port = url;
+    url = "/";
+  } else {
+    port = url.substr(0, pos);
+    url.erase(0, pos);
+  }
+
+  if(!std::all_of(port.begin(), port.end(), ::isdigit) || port.size() == 0) {
+    Log(LogLevel::kError, "'" + port + "' is not a valid port");
+    is_valid_ = false;
     return;
   }
-  
-  host_ = url.substr(0, pos);
-  path_ = url.substr(pos, url.length() - pos);
+
+  port_ = std::stoi(port);
+  path_ = url;
+
+  Log(LogLevel::kInfo, "Host: " + host_ + ", Port: " + std::to_string(port_) + ", Path: " + path_);
 }
 
 WebProtocol URL::Protocol() { return protocol_; }

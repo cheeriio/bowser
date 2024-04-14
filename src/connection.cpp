@@ -28,7 +28,7 @@ Connection::~Connection() {
 }
 
 bool Connection::SendMessage(std::vector<uint8_t> message) {
-  Log(LogLevel::kInfo, "Writing a message:\n" + std::string(message.begin(), message.end()));
+  Log(LogLevel::kInfo, "Sending " + std::to_string(message.size()) + " bytes");
   return write(sfd_, message.data(), message.size()) == message.size();
 }
 
@@ -38,18 +38,14 @@ std::vector<uint8_t> Connection::ReceiveMessage() {
   std::vector<uint8_t> result;
   ssize_t read_bytes;
 
-  do {
-    read_bytes = read(sfd_, buffer.data(), BUFFER_SIZE);
-    if(read_bytes > 0)
-      Log(LogLevel::kInfo, "Read " + std::to_string(read_bytes) + " bytes");
-    if(read_bytes == -1) {
-      Log(LogLevel::kError, "Error reading from socket");
-    }
-
+  while((read_bytes = read(sfd_, buffer.data(), BUFFER_SIZE)) > 0) {
+    Log(LogLevel::kInfo, "Read " + std::to_string(read_bytes) + " bytes");
     result.insert(result.end(), buffer.begin(), buffer.begin() + read_bytes);
-  } while(read_bytes > 0);
+  }
 
-  Log(LogLevel::kInfo, "Message received:\n" + std::string(result.begin(), result.end()));
+  if(read_bytes == -1)
+    Log(LogLevel::kError, "Error reading from socket");
+
   return result;
 }
 
@@ -93,15 +89,16 @@ void Connection::OpenHttp(URL url) {
   freeaddrinfo(result);
 
   if(rp == NULL) {
-    Log(LogLevel::kError, "Could not connect to " + url.Host() + " : " + std::to_string(url.Port()));
+    Log(LogLevel::kError, "Could not connect to " + url.Host() + ":" + std::to_string(url.Port()));
     is_valid_ = false;
     return;
   }
 
-  Log(LogLevel::kInfo, "Established a connection with " + url.Host() + " : " + std::to_string(url.Port()));
+  Log(LogLevel::kInfo, "Established a connection with " + url.Host() + ":" + std::to_string(url.Port()));
 }
 
 void Connection::OpenHttps(URL url) {
   Log(LogLevel::kError, "HTTPS not YET implemented");
+  is_valid_ = false;
   return;
 }
