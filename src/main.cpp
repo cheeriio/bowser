@@ -27,8 +27,10 @@ int main(int argc, char* argv[]) {
   }
 
   std::stringstream message_sstr;
-  message_sstr << "GET " << url.Path() << " HTTP/1.0\r\n"
+  message_sstr << "GET " << url.Path() << " HTTP/1.1\r\n"
                << "Host: " << url.Host() << "\r\n"
+               << "Connection: close\r\n"
+               << "User-Agent: Chewbacca\r\n"
                << "\r\n";
   std::string message_str = message_sstr.str();
   std::vector<uint8_t> message(message_str.begin(), message_str.end());
@@ -41,6 +43,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Received a response but failed to parsed it\n";
     return 0;
   }
+
+  std::cout << response_obj.Status() << " " << response_obj.StatusDescription() << "\n";
 
   if(!response_obj.Headers().count("Content-Type")) {
     std::cout << "Response has no 'Content-Type' header\n";
