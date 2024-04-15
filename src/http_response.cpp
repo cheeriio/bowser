@@ -58,7 +58,7 @@ HttpResponse::HttpResponse(std::vector<uint8_t> data) {
     }
 
     std::string key = line.substr(0, pos);
-    std::string value = line.substr(pos + 2, line.size());
+    std::string value = line.substr(pos + 2, line.size() - pos - 3); // Omit CR
 
     headers_.insert({key, value});
   }
@@ -66,7 +66,7 @@ HttpResponse::HttpResponse(std::vector<uint8_t> data) {
   content_ = sstr.str().substr(sstr.tellg());
 }
 
-const std::unordered_map<std::string, std::string> HttpResponse::Headers() {
+const std::unordered_map<std::string, std::string>& HttpResponse::Headers() {
   return headers_;
 }
 

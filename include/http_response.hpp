@@ -9,7 +9,7 @@ class HttpResponse {
  public:
   HttpResponse(std::vector<uint8_t>);
 
-  const std::unordered_map<std::string, std::string> Headers();
+  const std::unordered_map<std::string, std::string>& Headers();
   std::string Content();
   int Status();
   std::string StatusDescription();

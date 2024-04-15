@@ -7,6 +7,8 @@
 #include <http_response.hpp>
 #include <html_parser.hpp>
 
+#include <gzip/decompress.hpp>
+
 int main(int argc, char* argv[]) {
   if(argc != 2) {
     std::cout << "Usage: " << argv[0] << " <url>\n";
@@ -31,7 +33,8 @@ int main(int argc, char* argv[]) {
   request.Method("GET")
          .Version("HTTP/1.1")
          .AddHeader("Connection", "close")
-         .AddHeader("User-Agent", "Chewbacca");
+         .AddHeader("User-Agent", "Chewbacca")
+         .AddHeader("Accept-Encoding", "gzip");
 
   std::string message_str = request.Str();
   std::vector<uint8_t> message(message_str.begin(), message_str.end());
@@ -52,9 +55,8 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  if(response_obj.Headers().count("Transfer-Encoding") ||
-     response_obj.Headers().count("Content-Encoding")) {
-    std::cout << "Encoded content not supported\n";
+  if(response_obj.Headers().count("Transfer-Encoding")) {
+    std::cout << "'Transfer-Encoding' header not supported\n";
     return 0;
   }
 
@@ -65,8 +67,17 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  HtmlParser html_parser(response_obj.Content());
+  std::string content = response_obj.Content();
+  if(response_obj.Headers().count("Content-Encoding") &&
+     response_obj.Headers().at("Content-Encoding") == std::string("gzip")) {
+    content = gzip::decompress(content.data(), content.size());
+    std::cout << "\n\nDecoded response:" << content << "\n\n";
+  }
+
+  HtmlParser html_parser(content);
   html_parser.Show();
+
+  connection.Close();
 
   return 0;
 }

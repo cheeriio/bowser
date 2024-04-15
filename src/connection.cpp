@@ -71,10 +71,14 @@ void Connection::Close() {
   }
 
   if(is_tls_) {
-    if(web_ != NULL)
+    if(web_ != NULL) {
       BIO_free_all(web_);
-    if(NULL != ctx_)
+      web_ = NULL;
+    }
+    if(ctx_ != NULL){
       SSL_CTX_free(ctx_);
+      ctx_ = NULL;
+    }
   }
 }
 

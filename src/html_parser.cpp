@@ -12,7 +12,7 @@ void HtmlParser::Show() {
          pos_end = code_.find("</body>");
 
   if(pos_start == std::string::npos || pos_end == std::string::npos) {
-    Log(LogLevel::kInfo, "Could not parse the html code");
+    Log(LogLevel::kInfo, "Could not parse the html code.");
     return;
   }
 
